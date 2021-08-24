@@ -919,13 +919,23 @@ func addOCIBindMounts(ctx context.Context, mountLabel string, containerConfig *t
 	}
 
 	if _, mountSys := mountSet["/sys"]; !mountSys {
-		m := rspec.Mount{
-			Destination: "/sys/fs/cgroup",
-			Type:        "cgroup",
-			Source:      "cgroup",
-			Options:     []string{"nosuid", "noexec", "nodev", "relatime", "ro"},
-		}
-		specgen.AddMount(m)
+    if node.CgroupIsV2() {
+      m := rspec.Mount{
+        Destination: "/sys/fs/cgroup",
+        Type:        "cgroup",
+        Source:      "cgroup",
+        Options:     []string{"nosuid", "noexec", "nodev", "relatime", "rw"},
+      }
+		  specgen.AddMount(m)
+    } else {
+      m := rspec.Mount{
+        Destination: "/sys/fs/cgroup",
+        Type:        "cgroup",
+        Source:      "cgroup",
+        Options:     []string{"nosuid", "noexec", "nodev", "relatime", "ro"},
+      }
+      specgen.AddMount(m)
+    }
 	}
 
 	return volumes, ociMounts, nil
